@@ -1,4 +1,4 @@
-# tiktok-captcha-solver ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/arc298/tiktok-captcha-solver/build-test)  ![npm](https://img.shields.io/npm/v/tiktok-captcha-solver) ![npm](https://img.shields.io/npm/dt/tiktok-captcha-solver)  
+# tiktok-captcha-solver [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/arc298/tiktok-captcha-solver/build-test)](https://github.com/arc298/tiktok-captcha-solver/actions)  [![npm](https://img.shields.io/npm/v/tiktok-captcha-solver?color=blue)](https://www.npmjs.com/package/tiktok-captcha-solver)  
 
 > Solves the TikTok captcha interactively using playwright or puppeteer.
 
@@ -24,12 +24,12 @@ const CaptchaSolver = require('tiktok-captcha-solver')
   const page = await browser.newPage()
 
   // the captcha solver should be initialized before visiting the page
-  const catchaSolver = new CaptchaSolver(page)
+  const captchaSolver = new CaptchaSolver(page)
 
   await page.goto('https://www.tiktok.com/@tiktok')
 
   // solve the captcha
-  await catchaSolver.solve()
+  await captchaSolver.solve()
 })()
 ```
 ## API
