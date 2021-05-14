@@ -37,10 +37,11 @@ class CaptchaSolver {
   }
 
   async solve(options) {
-    return await this._watchForCaptchaAdd().then(
-      () => this.solveUntil(options),
-      () => {}
-    )
+    return this._watchForCaptchaAdd().
+      then(
+        () => this.solveUntil(options),
+        () => { /* ignore */ }
+      )
   }
 
   async solveUntil(options) {
@@ -111,7 +112,7 @@ class CaptchaSolver {
     await this.page.mouse.move(handle.x + target.position, handle.y + handle.height / 2)
     await this.page.mouse.up()
 
-    return await this._waitForCaptchaDismiss(isVerifyPage)
+    return this._waitForCaptchaDismiss(isVerifyPage)
   }
 
   async _isVerifyPage() {
@@ -127,7 +128,11 @@ class CaptchaSolver {
       return this._isVerifyPage()
     }
 
-    return await this.page.evaluate(this._waitForCaptchaDomRemove, this.selectors).catch(() => Promise.resolve(true))
+    try {
+      return await this.page.evaluate(this._waitForCaptchaDomRemove, this.selectors)
+    } catch (e) {
+      return Promise.resolve(true)
+    }
   }
 
   get captchaElements() {
@@ -136,15 +141,14 @@ class CaptchaSolver {
   }
 
   async _watchForCaptchaAdd() {
-    return await this.page.waitForSelector(this.selectors.verifyElement, {timeout: 5000})
-      .then(async () => {
-        return await this.page.evaluate(this._waitForCaptchaDomAdd, this.selectors)
-          .then(async () => {
-            const waitForCaptchaElements = this.captchaElements.map((el) => this.page.waitForSelector(el, {state: 'attached'}))
-            return await Promise.all(waitForCaptchaElements)
-          })
-      })
-      .catch(() => Promise.reject(new Error('Failed to find verify element')))
+    try {
+      await this.page.waitForSelector(this.selectors.verifyElement, {timeout: 5000})
+      await this.page.evaluate(this._waitForCaptchaDomAdd, this.selectors)
+      const waitForCaptchaElements = this.captchaElements.map((el) => this.page.waitForSelector(el, {state: 'attached'}))
+      return await Promise.all(waitForCaptchaElements)
+    } catch (e) {
+      return Promise.reject(new Error('Failed to find verify element'))
+    }
   }
 
   async _waitForCaptchaDomAdd({verifyElement, verifyContainer}) {
@@ -179,7 +183,7 @@ class CaptchaSolver {
             for (const removedNode of mutation.removedNodes) {
               if (removedNode.classList && removedNode.classList.contains(verifyContainer.slice(1))) {
                 observer.disconnect()
-                resolve(false)
+                resolve()
                 break
               }
             }

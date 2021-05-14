@@ -27,8 +27,8 @@ const runTestsFor = (name, browserType) => {
     })
 
     afterEach(async () => {
-      page.close()
-      if (context) context.close()
+      await page.close()
+      if (context) await context.close()
     })
 
     describe('when the verify page appears', () => {
