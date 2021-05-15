@@ -10,14 +10,17 @@ class CaptchaSolver {
     this.page = page
 
     const responseHandler = this._responseHandler()
-    this.page.on('response', async (response) => await responseHandler(response))
+    this.page.on(
+      'response',
+      async (response) => await responseHandler(response)
+    )
   }
 
   get defaults() {
     return {
       numAttempts: 3,
       startPosition: 25,
-      positionIncrement: 5
+      positionIncrement: 5,
     }
   }
 
@@ -37,11 +40,12 @@ class CaptchaSolver {
   }
 
   async solve(options) {
-    return this._watchForCaptchaAdd().
-      then(
-        () => this.solveUntil(options),
-        () => { /* ignore */ }
-      )
+    return this._watchForCaptchaAdd().then(
+      () => this.solveUntil(options),
+      () => {
+        /* ignore */
+      }
+    )
   }
 
   async solveUntil(options) {
@@ -59,7 +63,10 @@ class CaptchaSolver {
   }
 
   async _solveCaptcha() {
-    await this.page.evaluate(this._appendOverlayAndHidePuzzlePiece, this.selectors)
+    await this.page.evaluate(
+      this._appendOverlayAndHidePuzzlePiece,
+      this.selectors
+    )
 
     const sliderElement = await this.page.$(this.selectors.sliderElement)
     const sliderHandle = await this.page.$(this.selectors.sliderHandle)
@@ -70,11 +77,14 @@ class CaptchaSolver {
 
     const target = {
       position: 0,
-      difference: 100
+      difference: 100,
     }
 
     await this.page.waitForTimeout(3000)
-    await this.page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2)
+    await this.page.mouse.move(
+      handle.x + handle.width / 2,
+      handle.y + handle.height / 2
+    )
     await this.page.mouse.down()
 
     while (currentPosition < slider.width - handle.width / 2) {
@@ -83,16 +93,21 @@ class CaptchaSolver {
         handle.y + handle.height / 2
       )
 
-      await this.page.evaluate(this._syncOverlayPositionWithPuzzlePiece, this.selectors)
+      await this.page.evaluate(
+        this._syncOverlayPositionWithPuzzlePiece,
+        this.selectors
+      )
 
-      const sliderContainer = await this.page.$(this.selectors.puzzleImageWrapper)
+      const sliderContainer = await this.page.$(
+        this.selectors.puzzleImageWrapper
+      )
       const sliderImage = await sliderContainer.screenshot()
       const currentImage = await this._getCurrentImage(sliderImage)
 
       const rembrandt = new Rembrandt({
         imageA: this.startImage,
         imageB: currentImage,
-        thresholdType: Rembrandt.THRESHOLD_PIXELS
+        thresholdType: Rembrandt.THRESHOLD_PIXELS,
       })
 
       const result = await rembrandt.compare()
@@ -106,52 +121,82 @@ class CaptchaSolver {
       currentPosition += this.options.positionIncrement
     }
 
-    await this.page.evaluate(this._removeOverlayAndShowPuzzlePiece, this.selectors)
+    await this.page.evaluate(
+      this._removeOverlayAndShowPuzzlePiece,
+      this.selectors
+    )
     const isVerifyPage = await this._isVerifyPage()
 
-    await this.page.mouse.move(handle.x + target.position, handle.y + handle.height / 2)
+    await this.page.mouse.move(
+      handle.x + target.position,
+      handle.y + handle.height / 2
+    )
     await this.page.mouse.up()
 
     return this._waitForCaptchaDismiss(isVerifyPage)
   }
 
   async _isVerifyPage() {
-    return await this.page.title() === 'tiktok-verify-page'
+    return (await this.page.title()) === 'tiktok-verify-page'
   }
 
   async _waitForCaptchaDismiss(isVerifyPage) {
     if (isVerifyPage) {
       try {
-        await this.page.waitForNavigation({timeout: 5000, waitUntil: this.isPlaywright ? 'networkidle' : 'networkidle0'})
-      } catch (e) { /* ignore */ }
+        await this.page.waitForNavigation({
+          timeout: 5000,
+          waitUntil: this.isPlaywright ? 'networkidle' : 'networkidle0',
+        })
+      } catch (e) {
+        /* ignore */
+      }
 
       return this._isVerifyPage()
     }
 
     try {
-      return await this.page.evaluate(this._waitForCaptchaDomRemove, this.selectors)
+      return await this.page.evaluate(
+        this._waitForCaptchaDomRemove,
+        this.selectors
+      )
     } catch (e) {
       return Promise.resolve(true)
     }
   }
 
   get captchaElements() {
-    const {puzzleImageWrapper, puzzleImage, puzzlePiece, sliderElement, sliderHandle} = this.selectors
-    return [puzzleImageWrapper, puzzleImage, puzzlePiece, sliderElement, sliderHandle]
+    const {
+      puzzleImageWrapper,
+      puzzleImage,
+      puzzlePiece,
+      sliderElement,
+      sliderHandle,
+    } = this.selectors
+    return [
+      puzzleImageWrapper,
+      puzzleImage,
+      puzzlePiece,
+      sliderElement,
+      sliderHandle,
+    ]
   }
 
   async _watchForCaptchaAdd() {
     try {
-      await this.page.waitForSelector(this.selectors.verifyElement, {timeout: 5000})
+      await this.page.waitForSelector(this.selectors.verifyElement, {
+        timeout: 5000,
+      })
       await this.page.evaluate(this._waitForCaptchaDomAdd, this.selectors)
-      const waitForCaptchaElements = this.captchaElements.map((el) => this.page.waitForSelector(el, {state: 'attached'}))
+      const waitForCaptchaElements = this.captchaElements.map((el) =>
+        this.page.waitForSelector(el, { state: 'attached' })
+      )
       return await Promise.all(waitForCaptchaElements)
     } catch (e) {
       return Promise.reject(new Error('Failed to find verify element'))
     }
   }
 
-  async _waitForCaptchaDomAdd({verifyElement, verifyContainer}) {
+  async _waitForCaptchaDomAdd({ verifyElement, verifyContainer }) {
     const target = document.querySelector(verifyElement)
 
     if (document.querySelector(verifyContainer)) return Promise.resolve()
@@ -161,7 +206,10 @@ class CaptchaSolver {
         for (const mutation of mutations) {
           if (mutation.addedNodes.length) {
             for (const addedNode of mutation.addedNodes) {
-              if (addedNode.classList && addedNode.classList.contains(verifyContainer.slice(1))) {
+              if (
+                addedNode.classList &&
+                addedNode.classList.contains(verifyContainer.slice(1))
+              ) {
                 observer.disconnect()
                 resolve()
                 break
@@ -171,17 +219,20 @@ class CaptchaSolver {
         }
       })
 
-      observer.observe(target, {childList: true, subtree: true})
+      observer.observe(target, { childList: true, subtree: true })
     })
   }
 
-  async _waitForCaptchaDomRemove({verifyElement, verifyContainer}) {
+  async _waitForCaptchaDomRemove({ verifyElement, verifyContainer }) {
     return new Promise((resolve, reject) => {
       const observer = new MutationObserver((mutations) => {
         for (const mutation of mutations) {
           if (mutation.removedNodes.length) {
             for (const removedNode of mutation.removedNodes) {
-              if (removedNode.classList && removedNode.classList.contains(verifyContainer.slice(1))) {
+              if (
+                removedNode.classList &&
+                removedNode.classList.contains(verifyContainer.slice(1))
+              ) {
                 observer.disconnect()
                 resolve()
                 break
@@ -191,7 +242,9 @@ class CaptchaSolver {
         }
       })
 
-      observer.observe(document.querySelector(verifyElement), {childList: true})
+      observer.observe(document.querySelector(verifyElement), {
+        childList: true,
+      })
 
       setTimeout(reject.bind(this), 5000)
     })
@@ -203,13 +256,13 @@ class CaptchaSolver {
       .then((jimp) => jimp.getBufferAsync(Jimp.MIME_JPEG))
   }
 
-  _syncOverlayPositionWithPuzzlePiece({puzzlePiece, puzzlePieceOverlay}) {
+  _syncOverlayPositionWithPuzzlePiece({ puzzlePiece, puzzlePieceOverlay }) {
     const puzzlePieceEl = document.querySelector(puzzlePiece)
     const overlayEl = document.querySelector(puzzlePieceOverlay)
     overlayEl.style.left = puzzlePieceEl.style.left
   }
 
-  _removeOverlayAndShowPuzzlePiece({puzzlePieceOverlay, puzzlePiece}) {
+  _removeOverlayAndShowPuzzlePiece({ puzzlePieceOverlay, puzzlePiece }) {
     document.querySelector(puzzlePieceOverlay).remove()
     document.querySelector(puzzlePiece).style.display = 'block'
   }
@@ -224,12 +277,18 @@ class CaptchaSolver {
 
       if (contentLength > maxContentLength) {
         maxContentLength = contentLength
-        this.startImage = await (this.isPlaywright ? response.body() : response.buffer())
+        this.startImage = await (this.isPlaywright
+          ? response.body()
+          : response.buffer())
       }
     }
   }
 
-  _appendOverlayAndHidePuzzlePiece({puzzlePiece, puzzlePieceOverlay, puzzleImageWrapper}) {
+  _appendOverlayAndHidePuzzlePiece({
+    puzzlePiece,
+    puzzlePieceOverlay,
+    puzzleImageWrapper,
+  }) {
     const puzzlePieceEl = document.querySelector(puzzlePiece)
     const div = document.createElement('div')
     div.id = puzzlePieceOverlay.slice(1)
@@ -241,7 +300,7 @@ class CaptchaSolver {
       left: puzzlePieceEl.style.left,
       width: '0.617536em',
       height: '0.617536em',
-      backgroundColor: 'magenta'
+      backgroundColor: 'magenta',
     })
 
     puzzlePieceEl.style.display = 'none'

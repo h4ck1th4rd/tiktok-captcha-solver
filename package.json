@@ -4,7 +4,8 @@
   "description": "Solves the TikTok captcha interactively using playwright or puppeteer.",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "lint": "prettier --write --ignore-unknown ."
   },
   "keywords": [
     "tiktok",
@@ -40,6 +41,12 @@
   "homepage": "https://github.com/arc298/tiktok-captcha-solver#readme",
   "engines": {
     "node": ">=12 <=16"
+  },
+  "prettier": {
+    "printWidth": 80,
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "es5"
   },
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"

@@ -1,4 +1,9 @@
 node_modules
 coverage
+dist
+
 .idea
 .vscode
+
+.DS_Store
+*.log

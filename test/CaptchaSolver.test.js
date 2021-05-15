@@ -9,7 +9,7 @@ const runTestsFor = (name, browserType) => {
     let browser, context, page
 
     beforeAll(async () => {
-      browser = await browserType.launch({headless: true})
+      browser = await browserType.launch({ headless: true })
     })
 
     afterAll(async () => {
@@ -18,7 +18,7 @@ const runTestsFor = (name, browserType) => {
 
     beforeEach(async () => {
       if ('newContext' in browser) {
-        context = await browser.newContext({ignoreHTTPSErrors: true})
+        context = await browser.newContext({ ignoreHTTPSErrors: true })
         page = await context.newPage()
       } else {
         context = null
@@ -65,4 +65,3 @@ describe('CaptchaSolver', () => {
   runTestsFor('Playwright - firefox', firefox)
   runTestsFor('Playwright - webkit', webkit)
 })
-
