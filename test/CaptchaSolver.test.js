@@ -9,7 +9,7 @@ const runTestsFor = (name, browserType) => {
     let browser, context, page
 
     beforeAll(async () => {
-      browser = await browserType.launch({ headless: false })
+      browser = await browserType.launch({ headless: true })
     })
 
     afterAll(async () => {
