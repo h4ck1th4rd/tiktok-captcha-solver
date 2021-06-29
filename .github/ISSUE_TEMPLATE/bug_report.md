@@ -40,6 +40,6 @@ If applicable, add screenshots, a video, or a gif to help explain your problem.
 Add any other context about the problem here.
 
 <!--
-**Note: Stale issues will be removed
+Note: Stale issues will be removed
 When a maintainer asks a question about an issue and it is not responded to within a reasonable time frame then the issue will be closed. We don't want this to happen - but we also do not want to accumulate stale issues.
 -->
