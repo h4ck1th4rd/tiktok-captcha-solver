@@ -26,7 +26,7 @@ class CaptchaSolver {
 
   get selectors() {
     return {
-      verifyElement: '[id$="verify-ele"]',
+      verifyElement: '[id$="verify-ele"], #login_slide',
       verifyContainer: '.captcha_verify_container',
 
       puzzleImageWrapper: '.captcha_verify_img--wrapper',
